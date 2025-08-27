@@ -1,0 +1,8 @@
+2025-08-26 21:53:00,990 - ERROR - Error: (sqlite3.IntegrityError) NOT NULL constraint failed: chapter.subject_id
+[SQL: UPDATE chapter SET subject_id=? WHERE chapter.id = ?]
+[parameters: (None, 1)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-08-26 21:53:03,768 - ERROR - Error: (sqlite3.IntegrityError) NOT NULL constraint failed: chapter.subject_id
+[SQL: UPDATE chapter SET subject_id=? WHERE chapter.id = ?]
+[parameters: (None, 1)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
