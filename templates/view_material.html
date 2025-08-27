@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Material - {{ material.title }} - TestPrepPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .material-card {
+            transition: all 0.3s ease;
+        }
+        .material-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-700 shadow-lg">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold text-white tracking-wide">TestPrepPro</a>
+            <div class="flex items-center space-x-6 text-white">
+                <a href="{{ url_for('dashboard') }}" class="hover:underline flex items-center"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="{{ url_for('tests') }}" class="hover:underline flex items-center"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="{{ url_for('progress') }}" class="hover:underline flex items-center"><i class="fas fa-chart-line mr-1"></i> Progress</a>
+                <a href="{{ url_for('preparation') }}" class="hover:underline flex items-center"><i class="fas fa-book mr-1"></i> Preparation</a>
+                <a href="{{ url_for('logout') }}" class="hover:underline flex items-center"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="mb-10 text-center">
+                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight"><i class="fas fa-book mr-2"></i> {{ material.title }}</h1>
+                <p class="text-lg text-gray-600 mt-2">View and download study material</p>
+            </div>
+
+            <!-- Alerts -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl border border-gray-300 shadow-md 
+                                {% if category == 'error' %}bg-red-100 text-red-800 border-red-300
+                                {% else %}bg-green-100 text-green-800 border-green-300{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Material Details -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 material-card">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Material Details</h3>
+                <div class="space-y-4">
+                    <p><span class="font-medium text-gray-700">Title:</span> {{ material.title }}</p>
+                    <p><span class="font-medium text-gray-700">Type:</span> {{ material.material_type | capitalize }}</p>
+                    <p><span class="font-medium text-gray-700">Subject:</span> {{ material.subject_name|default('General') }}</p>
+                    <p><span class="font-medium text-gray-700">Created:</span> {{ material.created_at.strftime('%Y-%m-%d') }}</p>
+                    <div>
+                        <a href="{{ url_for('serve_material', filename=material.file_path) }}" class="inline-flex items-center px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <i class="fas fa-download mr-1"></i> Download Material
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

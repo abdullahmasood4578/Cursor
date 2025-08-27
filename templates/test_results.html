@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results - Entry Test Preparation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .score-ring {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .score-ring-inner {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .performance-bar {
+            transition: width 1s ease-in-out;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">TestPrepPro</a>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/progress" class="hover:underline"><i class="fas fa-chart-line mr-1"></i> Progress</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 max-w-6xl">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Test Results</h1>
+            <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+                <a href="{{ url_for('review_test', result_id=result.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-clipboard-check mr-2"></i> Review Test
+                </a>
+                <a href="{{ url_for('tests') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Take Another Test
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Score Summary -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="score-ring mr-6" style="background: conic-gradient(
+                        #4CAF50 0% {{ result.percentage }}%, 
+                        #f0f0f0 {{ result.percentage }}% 100%
+                    );">
+                        <div class="score-ring-inner">
+                            {{ "%.1f"|format(result.percentage) }}%
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">{{ test.name if test else 'Unknown Test' }}</h2>
+                        <p class="text-gray-600">Completed on: {{ result.completed_at.strftime('%B %d, %Y at %H:%M') }}</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-2xl font-bold text-blue-600">{{ result.total_questions }}</p>
+                        <p class="text-gray-600">Questions</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-2xl font-bold text-green-600">{{ result.correct_answers }}</p>
+                        <p class="text-gray-600">Correct</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <p class="text-2xl font-bold text-red-600">{{ result.incorrect_answers }}</p>
+                        <p class="text-gray-600">Incorrect</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="text-2xl font-bold text-purple-600">{{ result.time_taken }}m</p>
+                        <p class="text-gray-600">Time Taken</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Subject Performance -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Subject Performance</h3>
+                    <div class="space-y-4">
+                        {% for subject_name, data in subject_performance.items() %}
+                        <div class="subject-card bg-white border border-gray-200 rounded-lg p-4 transition-all duration-300">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-gray-800">{{ subject_name }}</h4>
+                                <span class="text-sm font-medium {% if data.percentage >= 70 %}text-green-600{% elif data.percentage >= 50 %}text-yellow-600{% else %}text-red-600{% endif %}">
+                                    {{ "%.1f"|format(data.percentage) }}%
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="performance-bar h-2.5 rounded-full {% if data.percentage >= 70 %}bg-green-600{% elif data.percentage >= 50 %}bg-yellow-500{% else %}bg-red-500{% endif %}" 
+                                     style="width: {{ data.percentage }}%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>{{ data.correct }}/{{ data.total }} correct</span>
+                                <span>Score: {{ data.correct * 10 }}/{{ data.total * 10 }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Question Analysis -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Question Analysis</h3>
+                    <canvas id="questionChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Performance Insights -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Performance Insights</h3>
+                    <div class="space-y-4">
+                        {% if best_subject %}
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-lightbulb text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Strength: {{ best_subject[0] }}</h4>
+                                <p class="text-sm text-gray-600">You answered {{ "%.1f"|format(best_subject[1].percentage) }}% of questions correctly in this subject.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if worst_subject %}
+                        <div class="flex items-start">
+                            <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Needs Improvement: {{ worst_subject[0] }}</h4>
+                                <p class="text-sm text-gray-600">You struggled with this subject ({{ "%.1f"|format(worst_subject[1].percentage) }}% correct).</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-bolt text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Time Management</h4>
+                                <p class="text-sm text-gray-600">
+                                    {% if test and result.time_taken < test.time_limit %}
+                                        You completed the test with {{ test.time_limit - result.time_taken }} minutes to spare.
+                                    {% elif test %}
+                                        You exceeded the time limit by {{ result.time_taken - test.time_limit }} minutes.
+                                    {% else %}
+                                        Time data not available.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Recommended Actions</h3>
+                    <div class="space-y-3">
+                        <a href="{{ url_for('preparation') }}" class="flex items-center p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-book text-blue-600"></i>
+                            </div>
+                            <span class="text-gray-700">Review Study Materials</span>
+                        </a>
+                        <a href="{{ url_for('tests') }}" class="flex items-center p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors">
+                            <div class="bg-green-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-clipboard-list text-green-600"></i>
+                            </div>
+                            <span class="text-gray-700">Take Another Practice Test</span>
+                        </a>
+                        <a href="{{ url_for('progress') }}" class="flex items-center p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors">
+                            <div class="bg-purple-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                            <span class="text-gray-700">View Progress Report</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Share Results -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Share Your Results</h3>
+                    <p class="text-gray-600 mb-4">Share your test performance with instructors or study groups.</p>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="window.print()">
+                            <i class="fas fa-print mr-2"></i> Print Results
+                        </button>
+                        <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center">
+                            <i class="fas fa-share-alt mr-2"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize chart
+            const ctx = document.getElementById('questionChart').getContext('2d');
+            
+            // Prepare data for the chart
+            const subjects = [];
+            const correctData = [];
+            const incorrectData = [];
+            
+            {% for subject_name, data in subject_performance.items() %}
+                subjects.push('{{ subject_name }}');
+                correctData.push({{ data.correct }});
+                incorrectData.push({{ data.total - data.correct }});
+            {% endfor %}
+            
+            const questionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: subjects,
+                    datasets: [{
+                        label: 'Correct Answers',
+                        data: correctData,
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#4CAF50',
+                        borderWidth: 1
+                    }, {
+                        label: 'Incorrect Answers',
+                        data: incorrectData,
+                        backgroundColor: '#F44336',
+                        borderColor: '#F44336',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Animate progress bars
+            setTimeout(() => {
+                document.querySelectorAll('.performance-bar').forEach(bar => {
+                    bar.style.transition = 'width 1.5s ease-in-out';
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>

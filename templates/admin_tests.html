@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Manage Tests - TestPrepPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .card {
+      transition: all 0.3s ease;
+      border-radius: 12px;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+    }
+    .action-button {
+      transition: all 0.2s ease;
+    }
+    .action-button:hover {
+      transform: scale(1.05);
+    }
+    .alert {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .nav-link {
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 768px) {
+      .nav-menu {
+        flex-direction: column;
+        gap: 1rem;
+        display: none;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/admin/dashboard" class="text-xl font-bold flex items-center">
+        <i class="fas fa-graduation-cap mr-2"></i> TestPrepPro Admin
+      </a>
+      <button class="md:hidden text-white focus:outline-none" onclick="toggleNav()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-menu flex items-center space-x-4 md:flex md:space-y-0">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-home mr-1"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin_tests') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center bg-blue-700">
+          <i class="fas fa-file-alt mr-1"></i> Tests
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-users mr-1"></i> Users
+        </a>
+        <a href="{{ url_for('admin_questions') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-question-circle mr-1"></i> Questions
+        </a>
+        <a href="{{ url_for('admin_materials') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-book mr-1"></i> Materials
+        </a>
+        <a href="{{ url_for('admin_analytics') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-chart-line mr-1"></i> Analytics
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-4 max-w-5xl">
+    <div class="py-12 px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+          <h2 class="text-3xl font-bold text-gray-800">Manage Tests</h2>
+          <p class="text-gray-600 mt-2">View and manage all tests</p>
+        </div>
+        <a href="{{ url_for('add_test') }}" class="action-button inline-flex py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+          <i class="fas fa-plus mr-2"></i> Add New Test
+        </a>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="mb-6 space-y-2">
+            {% for category, message in messages %}
+              <div class="alert p-4 rounded-lg flex items-center
+                {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}"
+                role="alert">
+                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-2"></i>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 card">
+        {% if tests %}
+          <div class="space-y-4">
+            {% for test in tests %}
+              <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg card">
+                <div>
+                  <p class="font-medium text-gray-900">{{ test.name }}</p>
+                  <p class="text-sm text-gray-600">{{ test.description or 'No description provided' }}</p>
+                </div>
+                <div class="flex space-x-2">
+                  <a href="{{ url_for('admin_subjects', test_id=test.id) }}"
+                     class="action-button px-3 py-1 rounded-lg text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition duration-150">
+                    <i class="fas fa-eye mr-1"></i> Subjects
+                  </a>
+                  <a href="{{ url_for('edit_test', test_id=test.id) }}"
+                     class="action-button px-3 py-1 rounded-lg text-sm font-medium text-white bg-green-500 hover:bg-green-600 transition duration-150">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </a>
+                  <form action="{{ url_for('delete_test', test_id=test.id) }}" method="POST" class="inline"
+                        onsubmit="return confirm('Are you sure you want to delete this test?');">
+                    {{ form.hidden_tag() }}
+                    <button type="submit"
+                            class="action-button px-3 py-1 rounded-lg text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition duration-150">
+                      <i class="fas fa-trash mr-1"></i> Delete
+                    </button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-gray-600">No tests available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleNav() {
+      const navMenu = document.querySelector('.nav-menu');
+      navMenu.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

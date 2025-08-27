@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Questions - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/admin/dashboard" class="text-xl font-bold">TestPrepPro Admin</a>
+            <div class="flex items-center space-x-4">
+                <a href="/admin/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/admin/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/admin/questions" class="hover:underline"><i class="fas fa-question-circle mr-1"></i> Questions</a>
+                <a href="/admin/users" class="hover:underline"><i class="fas fa-users mr-1"></i> Users</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 max-w-7xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Manage Questions</h1>
+            <a href="/admin/add_question" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-plus mr-2"></i> Add New Question
+            </a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Search Questions</label>
+                    <input type="text" placeholder="Search by question text..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Test</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Tests</option>
+                        <!-- Add test options here -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Subject</label>
+                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Subjects</option>
+                        <!-- Add subject options here -->
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">All Questions ({{ questions|length }})</h2>
+            
+            {% if questions %}
+            <div class="space-y-4">
+                {% for question in questions %}
+                <div class="question-card bg-white border border-gray-200 rounded-lg p-4 transition-all duration-300">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800 mb-2">{{ question.question_text|truncate(150) }}</h3>
+                            <div class="text-sm text-gray-600 mb-2">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md mr-2">
+                                    Test: {{ test_data.get(question.test_id, 'Unknown Test') }}
+                                </span>
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-md">
+                                    Subject: {{ subject_data.get(question.subject_id, 'Unknown Subject') }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Created: {{ question.created_at.strftime('%Y-%m-%d %H:%M') }} | 
+                                Correct Answer: <span class="font-bold">{{ question.correct_answer }}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 ml-4">
+                         <a href="{{ url_for('edit_question', question_id=question.id) }}" 
+   class="text-blue-600 hover:text-blue-900" title="Edit">
+    <i class="fas fa-edit"></i>
+</a>
+
+                            <a href="{{ url_for('delete_question', question_id=question.id) }}" class="text-red-600 hover:text-red-900" title="Delete" onclick="return confirm('Are you sure you want to delete this question?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2">A:</span>
+                            <span class="{% if question.correct_answer == 'A' %}text-green-600 font-bold{% else %}text-gray-700{% endif %}">
+                                {{ question.option_a|truncate(80) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2">B:</span>
+                            <span class="{% if question.correct_answer == 'B' %}text-green-600 font-bold{% else %}text-gray-700{% endif %}">
+                                {{ question.option_b|truncate(80) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2">C:</span>
+                            <span class="{% if question.correct_answer == 'C' %}text-green-600 font-bold{% else %}text-gray-700{% endif %}">
+                                {{ question.option_c|truncate(80) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2">D:</span>
+                            <span class="{% if question.correct_answer == 'D' %}text-green-600 font-bold{% else %}text-gray-700{% endif %}">
+                                {{ question.option_d|truncate(80) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            <div class="mt-6 flex justify-between items-center">
+                <div class="text-sm text-gray-700">
+                    Showing {{ questions|length }} of {{ questions|length }} questions
+                </div>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-gray-500">
+                <i class="fas fa-question-circle text-4xl mb-3"></i>
+                <p class="text-lg">No questions found.</p>
+                <p class="mt-2">Add your first question to get started.</p>
+                <a href="/admin/add_question" class="inline-block mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Add New Question
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add any JavaScript functionality needed
+        });
+    </script>
+</body>
+</html>

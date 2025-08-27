@@ -1,0 +1,302 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Add Test - TestPrepPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .form-card {
+      transition: all 0.3s ease;
+      border-radius: 16px;
+    }
+    .form-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+    }
+    .input-field {
+      transition: all 0.2s ease;
+      border-radius: 12px;
+    }
+    .input-field:focus {
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .nav-link {
+      transition: all 0.2s ease;
+    }
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+    .alert {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      .nav-menu {
+        flex-direction: column;
+        gap: 1rem;
+        display: none;
+      }
+      .nav-menu.open {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/admin/dashboard" class="text-xl font-bold flex items-center">
+        <i class="fas fa-graduation-cap mr-2"></i> TestPrepPro Admin
+      </a>
+      <button class="md:hidden text-white focus:outline-none" onclick="toggleNav()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="nav-menu flex items-center space-x-4 md:flex md:space-y-0">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-home mr-1"></i> Dashboard
+        </a>
+        <a href="{{ url_for('admin_tests') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center bg-blue-700">
+          <i class="fas fa-file-alt mr-1"></i> Tests
+        </a>
+        <a href="{{ url_for('admin_users') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-users mr-1"></i> Users
+        </a>
+        <a href="{{ url_for('admin_questions') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-question-circle mr-1"></i> Questions
+        </a>
+        <a href="{{ url_for('admin_materials') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-book mr-1"></i> Materials
+        </a>
+        <a href="{{ url_for('admin_analytics') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-chart-line mr-1"></i> Analytics
+        </a>
+        <a href="{{ url_for('logout') }}" class="nav-link px-3 py-2 rounded-lg hover:underline flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-4 max-w-4xl">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+          <i class="fas fa-plus-circle text-blue-600 mr-3"></i> Add New Test
+        </h1>
+        <p class="text-gray-600 mt-2">Create a new test for students to take</p>
+      </div>
+      <a href="{{ url_for('admin_tests') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center transition duration-150">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Tests
+      </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-6 space-y-3">
+          {% for category, message in messages %}
+            <div class="alert p-4 rounded-xl border-l-4 flex items-center
+              {% if category == 'success' %}bg-green-50 border-green-400 text-green-700
+              {% elif category == 'error' %}bg-red-50 border-red-400 text-red-700
+              {% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %}">
+              <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3 text-lg"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Add Test Form -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 form-card">
+      <form method="POST" action="{{ url_for('add_test') }}" class="space-y-6">
+        {{ form.csrf_token }}
+        <!-- Test Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-heading text-blue-500 mr-2"></i> Test Name
+          </label>
+          <input type="text" name="name" id="name" value="{{ form.name.data or '' }}"
+                 class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="Enter test name (e.g., Mathematics Final Exam)" required>
+          {% if form.name.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ form.name.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Test Description -->
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-align-left text-blue-500 mr-2"></i> Description
+          </label>
+          <textarea name="description" id="description" rows="3"
+                    class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter test description (optional)">{{ form.description.data or '' }}</textarea>
+          {% if form.description.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ form.description.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Total Marks -->
+          <div>
+            <label for="total_marks" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-star text-yellow-500 mr-2"></i> Total Marks
+            </label>
+            <input type="number" name="total_marks" id="total_marks" min="1" value="{{ form.total_marks.data or '' }}"
+                   class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., 100" required>
+            {% if form.total_marks.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.total_marks.errors[0] }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Total Questions -->
+          <div>
+            <label for="total_questions" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-question-circle text-purple-500 mr-2"></i> Total Questions
+            </label>
+            <input type="number" name="total_questions" id="total_questions" min="1" value="{{ form.total_questions.data or '' }}"
+                   class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., 20" required>
+            {% if form.total_questions.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.total_questions.errors[0] }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Time Limit -->
+          <div>
+            <label for="time_limit" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <i class="fas fa-clock text-green-500 mr-2"></i> Time Limit (Minutes)
+            </label>
+            <input type="number" name="time_limit" id="time_limit" min="1" value="{{ form.time_limit.data or '' }}"
+                   class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., 60" required>
+            {% if form.time_limit.errors %}
+              <p class="text-red-600 text-sm mt-1">{{ form.time_limit.errors[0] }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label for="is_active" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-toggle-on text-red-500 mr-2"></i> Status
+          </label>
+          <select name="is_active" id="is_active"
+                  class="input-field w-full px-4 py-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="1" {% if form.is_active.data == '1' %}selected{% endif %}>Active (Visible to students)</option>
+            <option value="0" {% if form.is_active.data == '0' %}selected{% endif %}>Inactive (Hidden from students)</option>
+          </select>
+          {% if form.is_active.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ form.is_active.errors[0] }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+          <button type="reset" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition duration-150 flex items-center">
+            <i class="fas fa-undo mr-2"></i> Reset Form
+          </button>
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition duration-150 flex items-center">
+            <i class="fas fa-plus-circle mr-2"></i> Create Test
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="mt-8 bg-blue-50 rounded-2xl p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Quick Tips
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-start">
+          <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+            <i class="fas fa-clock text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800">Time Allocation</h3>
+            <p class="text-sm text-gray-600">Allow approximately 1-2 minutes per question for standard tests.</p>
+          </div>
+        </div>
+        <div class="flex items-start">
+          <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+            <i class="fas fa-star text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800">Scoring</h3>
+            <p class="text-sm text-gray-600">Set appropriate marks based on question difficulty.</p>
+          </div>
+        </div>
+        <div class="flex items-start">
+          <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+            <i class="fas fa-eye text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800">Visibility</h3>
+            <p class="text-sm text-gray-600">Set tests to inactive while you're still adding questions.</p>
+          </div>
+        </div>
+        <div class="flex items-start">
+          <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+            <i class="fas fa-book text-blue-600"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-800">Content</h3>
+            <p class="text-sm text-gray-600">Add questions after creating the test framework.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Navigation toggle for mobile
+    function toggleNav() {
+      const navMenu = document.querySelector('.nav-menu');
+      navMenu.classList.toggle('open');
+    }
+
+    // Form validation and focus styles
+    document.addEventListener('DOMContentLoaded', function() {
+      const formElements = document.querySelectorAll('input, select, textarea');
+      formElements.forEach(element => {
+        element.addEventListener('focus', function() {
+          this.parentElement.classList.add('ring-2', 'ring-blue-300', 'rounded-lg', 'p-1');
+        });
+        element.addEventListener('blur', function() {
+          this.parentElement.classList.remove('ring-2', 'ring-blue-300', 'rounded-lg', 'p-1');
+        });
+      });
+
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function(e) {
+        const timeLimit = document.getElementById('time_limit').value;
+        const totalQuestions = document.getElementById('total_questions').value;
+        if (timeLimit < 1) {
+          e.preventDefault();
+          alert('Time limit must be at least 1 minute.');
+          return false;
+        }
+        if (totalQuestions < 1) {
+          e.preventDefault();
+          alert('Total questions must be at least 1.');
+          return false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+```

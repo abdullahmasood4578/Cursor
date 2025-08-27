@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Login - TestPrep{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="bg-indigo-600 p-3 rounded-full">
+                    <i class="fas fa-sign-in-alt text-white text-2xl"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+            <p class="text-gray-600">Sign in to your account to continue your learning journey</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 card-hover">
+            <form method="POST" id="loginForm" class="space-y-6">
+                 {{ form.hidden_tag() }}
+
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2 text-indigo-600"></i>Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
+                        placeholder="Enter your email address"
+                        autocomplete="email"
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-lock mr-2 text-indigo-600"></i>Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                        >
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id="remember" 
+                            name="remember"
+                            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        >
+                        <label for="remember" class="ml-2 block text-sm text-gray-700">
+                            Remember me
+                        </label>
+                    </div>
+                    <a href="{{ url_for('forgot_password') }}" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    id="loginBtn"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 shadow-lg hover:shadow-xl"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
+                </button>
+
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-gray-500">or</span>
+                    </div>
+                </div>
+
+                <!-- Social Login Options -->
+                <div class="space-y-3">
+                    <button 
+                        type="button" 
+                        class="w-full bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <i class="fab fa-google text-red-500 mr-3"></i>Continue with Google
+                    </button>
+                    <button 
+                        type="button" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <i class="fab fa-facebook-f mr-3"></i>Continue with Facebook
+                    </button>
+                </div>
+            </form>
+
+            <!-- Sign Up Link -->
+            <div class="mt-8 text-center">
+                <p class="text-gray-600">
+                    Don't have an account? 
+                    <a href="{{ url_for('register') }}" class="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        Create one here
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Additional Links -->
+        <div class="mt-8 text-center">
+            <div class="flex justify-center space-x-6">
+                <a href="{{ url_for('index') }}" class="text-gray-500 hover:text-gray-700 text-sm flex items-center">
+                    <i class="fas fa-home mr-1"></i>Home
+                </a>
+                <a href="#" class="text-gray-500 hover:text-gray-700 text-sm flex items-center">
+                    <i class="fas fa-question-circle mr-1"></i>Help
+                </a>
+                <a href="#" class="text-gray-500 hover:text-gray-700 text-sm flex items-center">
+                    <i class="fas fa-shield-alt mr-1"></i>Privacy
+                </a>
+            </div>
+        </div>
+
+        <!-- Admin Login Link -->
+        <div class="mt-6 text-center">
+            <a href="{{ url_for('admin_login') }}" class="text-xs text-gray-400 hover:text-gray-600">
+                Admin Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Background Animation -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-40 -right-32 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+    <div class="absolute -bottom-40 -left-32 w-80 h-80 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+    <div class="absolute top-40 left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password toggle functionality
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    });
+
+    // Form submission with loading state
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('loginBtn');
+        
+        // Basic validation
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        if (!email || !password) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+            return;
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Please enter a valid email address.');
+            return;
+        }
+        
+        // Show loading state
+        showLoading(submitBtn);
+    });
+
+    // Auto-focus on email field
+    document.getElementById('email').focus();
+
+    // Enter key navigation
+    document.getElementById('email').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('password').focus();
+        }
+    });
+
+    // Form field animations
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('animate-pulse');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('animate-pulse');
+        });
+    });
+
+    // Social login handlers (placeholder)
+    document.querySelectorAll('button[type="button"]').forEach(btn => {
+        if (btn.id !== 'togglePassword') {
+            btn.addEventListener('click', function() {
+                alert('Social login functionality coming soon!');
+            });
+        }
+    });
+
+    // Keyboard shortcut for admin login
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+            window.location.href = "{{ url_for('admin_login') }}";
+        }
+    });
+</script>
+{% endblock %}

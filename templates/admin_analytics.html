@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - TestPrepPro Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/admin/dashboard" class="text-xl font-bold">TestPrepPro Admin</a>
+            <div class="flex items-center space-x-4">
+                <a href="/admin/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/admin/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/admin/users" class="hover:underline"><i class="fas fa-users mr-1"></i> Users</a>
+                <a href="/admin/questions" class="hover:underline"><i class="fas fa-question-circle mr-1"></i> Questions</a>
+                <a href="/admin/materials" class="hover:underline"><i class="fas fa-book mr-1"></i> Materials</a>
+                <a href="/admin/analytics" class="hover:underline"><i class="fas fa-chart-bar mr-1"></i> Analytics</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 max-w-7xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Analytics Dashboard</h1>
+            <div class="text-sm text-gray-600">
+                <i class="fas fa-calendar-alt mr-2"></i>
+                {% if now %}
+                    {{ now.strftime('%B %d, %Y') }}
+                {% else %}
+                    {{ date_today }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Statistics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Users -->
+            <div class="stat-card bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-800">{{ total_users }}</p>
+                        <p class="text-sm text-gray-600">Total Users</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm text-green-600">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span>Registered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Users -->
+            <div class="stat-card bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-user-check text-green-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-800">{{ active_users }}</p>
+                        <p class="text-sm text-gray-600">Active Users</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm text-green-600">
+                        <i class="fas fa-chart-line mr-1"></i>
+                        <span>
+                            {% if total_users > 0 %}
+                                {{ "%.1f"|format((active_users / total_users * 100)) }}% active
+                            {% else %}
+                                0% active
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Tests -->
+            <div class="stat-card bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-purple-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-file-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-800">{{ total_tests }}</p>
+                        <p class="text-sm text-gray-600">Total Tests</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm text-green-600">
+                        <i class="fas fa-list mr-1"></i>
+                        <span>Available</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Attempts -->
+            <div class="stat-card bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="bg-orange-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-chart-line text-orange-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-gray-800">{{ total_attempts }}</p>
+                        <p class="text-sm text-gray-600">Test Attempts</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center text-sm text-green-600">
+                        <i class="fas fa-arrow-up mr-1"></i>
+                        <span>Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Monthly Registrations Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Monthly Registrations</h2>
+                    <span class="text-sm text-gray-600">
+                        <i class="fas fa-user-plus mr-1"></i> User Growth
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="monthlyRegistrationsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Test Popularity Chart -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Test Popularity</h2>
+                    <span class="text-sm text-gray-600">
+                        <i class="fas fa-chart-bar mr-1"></i> Attempts by Test
+                    </span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="testPopularityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Average Scores Chart -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Average Scores by Test</h2>
+                <span class="text-sm text-gray-600">
+                    <i class="fas fa-graduation-cap mr-1"></i> Performance Metrics
+                </span>
+            </div>
+            <div class="chart-container">
+                <canvas id="avgScoresChart"></canvas>
+            </div>
+        </div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+  <div class="p-4 bg-white rounded-lg shadow-md text-center">
+    <h3 class="text-lg font-semibold">Average Test Score</h3>
+    <p class="text-2xl font-bold text-blue-600">{{ avg_score }}%</p>
+  </div>
+  <div class="p-4 bg-white rounded-lg shadow-md text-center">
+    <h3 class="text-lg font-semibold">Highest Score</h3>
+    <p class="text-2xl font-bold text-green-600">{{ highest_score }}%</p>
+  </div>
+  <div class="p-4 bg-white rounded-lg shadow-md text-center">
+    <h3 class="text-lg font-semibold">Average Time per Test</h3>
+    <p class="text-2xl font-bold text-purple-600">{{ avg_time }} min</p>
+  </div>
+</div>
+
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-blue-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-user-plus text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">{{ total_users }} total users registered</p>
+                            <p class="text-xs text-gray-500">System total</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-green-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">{{ total_attempts }} tests completed</p>
+                            <p class="text-xs text-gray-500">Total attempts</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                        <div class="bg-purple-100 p-2 rounded-full mr-3">
+                            <i class="fas fa-chart-line text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium">{{ total_questions }} questions available</p>
+                            <p class="text-xs text-gray-500">In database</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Registrations Chart
+            const monthlyRegistrationsCtx = document.getElementById('monthlyRegistrationsChart').getContext('2d');
+            const monthlyRegistrationsChart = new Chart(monthlyRegistrationsCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ monthly_registrations | map(attribute='month') | list | tojson }},
+                    datasets: [{
+                        label: 'User Registrations',
+                        data: {{ monthly_registrations | map(attribute='count') | list | tojson }},
+                        backgroundColor: '#3B82F6',
+                        borderColor: '#1D4ED8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Test Popularity Chart
+            const testPopularityCtx = document.getElementById('testPopularityChart').getContext('2d');
+            const testPopularityChart = new Chart(testPopularityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ test_popularity | map(attribute='name') | list | tojson }},
+                    datasets: [{
+                        label: 'Test Attempts',
+                        data: {{ test_popularity | map(attribute='attempts') | list | tojson }},
+                        backgroundColor: [
+                            '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                            '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+
+            // Average Scores Chart
+            const avgScoresCtx = document.getElementById('avgScoresChart').getContext('2d');
+            
+            // Prepare data for average scores chart
+            const testNames = {{ avg_scores | map(attribute='name') | list | tojson }};
+            const avgScoreValues = {{ avg_scores | map(attribute='avg_score') | list | tojson }};
+            
+            const avgScoresChart = new Chart(avgScoresCtx, {
+                type: 'line',
+                data: {
+                    labels: testNames,
+                    datasets: [{
+                        label: 'Average Score (%)',
+                        data: avgScoreValues,
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderColor: '#4F46E5',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Add hover effects to stat cards
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                    this.style.boxShadow = '0 8px 15px -3px rgba(0, 0, 0, 0.1)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

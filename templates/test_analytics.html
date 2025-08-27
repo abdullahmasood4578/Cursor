@@ -1,0 +1,83 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Test Analytics: {{ test.name }}</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700">Total Attempts</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ total_attempts }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700">Average Score</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ '%.2f' % avg_score }}%</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700">Highest Score</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ '%.2f' % highest_score }}%</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold text-gray-700">Lowest Score</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ '%.2f' % lowest_score }}%</p>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Score Distribution</h3>
+            <div id="score-distribution-chart" class="h-64"></div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Recent Results</h3>
+            {% if results %}
+                <div class="space-y-4">
+                    {% for result in results %}
+                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-md">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ User.query.get(result.user_id).username }}</p>
+                                <p class="text-sm text-gray-600">{{ result.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                            <p class="text-sm font-medium text-blue-600">{{ '%.2f' % result.percentage }}%</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600">No results available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+```chartjs
+{
+  "type": "bar",
+  "data": {
+    "labels": ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
+    "datasets": [{
+      "label": "Score Distribution",
+      "data": [
+        {{ score_ranges['0-20'] }},
+        {{ score_ranges['21-40'] }},
+        {{ score_ranges['41-60'] }},
+        {{ score_ranges['61-80'] }},
+        {{ score_ranges['81-100'] }}
+      ],
+      "backgroundColor": "#2563eb",
+      "borderColor": "#1e3a8a",
+      "borderWidth": 1
+    }]
+  },
+  "options": {
+    "responsive": true,
+    "scales": {
+      "y": { "beginAtZero": true }
+    }
+  }
+}

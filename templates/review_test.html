@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Test - {{ test.name }} - TestPrepPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .question-card {
+      transition: all 0.3s ease;
+      border-radius: 16px;
+    }
+    .question-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+    }
+    .option-card {
+      transition: all 0.2s ease;
+      border-radius: 12px;
+    }
+    .option-card.correct {
+      background-color: #d1fae5;
+      border-color: #10b981;
+    }
+    .option-card.incorrect {
+      background-color: #fee2e2;
+      border-color: #ef4444;
+    }
+    .option-card.user-correct {
+      background-color: #d1fae5;
+      border-color: #10b981;
+    }
+    .option-card.user-incorrect {
+      background-color: #fee2e2;
+      border-color: #ef4444;
+    }
+    .progress-bar {
+      transition: width 1s ease-in-out;
+    }
+    #chat-panel {
+      transform: translateX(100%);
+      transition: transform 0.3s ease-in-out;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+    #chat-panel.open {
+      transform: translateX(0);
+    }
+    .chat-message {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/" class="text-xl font-bold flex items-center">
+        <i class="fas fa-graduation-cap mr-2"></i> TestPrepPro
+      </a>
+      <div class="flex items-center space-x-4">
+        <a href="/dashboard" class="hover:underline"><i class="fas fa-home mr-1"></i> Dashboard</a>
+        <a href="/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+        <a href="/progress" class="hover:underline"><i class="fas fa-chart-line mr-1"></i> Progress</a>
+        <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-4 max-w-4xl">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Review Test: {{ test.name }}</h1>
+        <p class="text-gray-600 mt-2">Analyze your performance and learn from mistakes</p>
+      </div>
+      <a href="{{ url_for('progress') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Progress
+      </a>
+    </div>
+
+    <!-- Test Summary -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="text-center p-4 bg-blue-50 rounded-lg">
+          <div class="bg-blue-100 p-3 rounded-full inline-block mb-3">
+            <i class="fas fa-check-circle text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800">{{ result.correct_answers }}</h3>
+          <p class="text-sm text-gray-600">Correct</p>
+        </div>
+        
+        <div class="text-center p-4 bg-red-50 rounded-lg">
+          <div class="bg-red-100 p-3 rounded-full inline-block mb-3">
+            <i class="fas fa-times-circle text-red-600 text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800">{{ result.incorrect_answers }}</h3>
+          <p class="text-sm text-gray-600">Incorrect</p>
+        </div>
+        
+        <div class="text-center p-4 bg-green-50 rounded-lg">
+          <div class="bg-green-100 p-3 rounded-full inline-block mb-3">
+            <i class="fas fa-percent text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800">{{ "%.1f"|format(result.percentage) }}%</h3>
+          <p class="text-sm text-gray-600">Score</p>
+        </div>
+        
+        <div class="text-center p-4 bg-purple-50 rounded-lg">
+          <div class="bg-purple-100 p-3 rounded-full inline-block mb-3">
+            <i class="fas fa-clock text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-800">{{ result.time_taken }}m</h3>
+          <p class="text-sm text-gray-600">Time Taken</p>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-center text-gray-600">
+        <i class="fas fa-calendar-alt mr-2"></i>
+        Completed: {{ result.completed_at.strftime('%B %d, %Y at %H:%M') }}
+      </div>
+    </div>
+
+    <!-- Question Navigation -->
+    <div class="bg-white rounded-2xl shadow-lg p-4 mb-6">
+      <div class="flex justify-between items-center">
+        <span class="text-sm font-medium text-gray-700">
+          Question <span id="current-question">1</span> of {{ questions_data|length }}
+        </span>
+        
+        <div class="flex space-x-2">
+          <button id="prev-button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150">
+            <i class="fas fa-arrow-left mr-2"></i> Previous
+          </button>
+          <button id="next-button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150">
+            Next <i class="fas fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+        <div id="progress-bar" class="progress-bar h-2.5 rounded-full bg-blue-600" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Questions Review - One at a time -->
+    <div class="space-y-6">
+      {% for q in questions_data %}
+      <div class="question-container {% if loop.index0 != 0 %}hidden{% endif %}" data-index="{{ loop.index0 }}">
+        <div class="bg-white rounded-2xl shadow-lg p-6 question-card">
+          <!-- Question Header -->
+          <div class="flex justify-between items-start mb-6">
+            <div class="flex items-start">
+              <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-4 flex-shrink-0">
+                {{ loop.index }}
+              </span>
+              <h2 class="text-lg font-semibold text-gray-800">{{ q.question_text }}</h2>
+            </div>
+            
+            {% if q.is_correct %}
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm flex items-center">
+              <i class="fas fa-check-circle mr-1"></i> Correct
+            </span>
+            {% else %}
+            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm flex items-center">
+              <i class="fas fa-times-circle mr-1"></i> Incorrect
+            </span>
+            {% endif %}
+          </div>
+          
+          <!-- Options -->
+          <div class="space-y-3 mb-6">
+            {% for option in ['A', 'B', 'C', 'D'] %}
+            <div class="option-card p-4 border rounded-lg
+              {% if option == q.correct_answer %} correct
+              {% elif option == q.user_answer and not q.is_correct %} user-incorrect
+              {% elif option == q.user_answer and q.is_correct %} user-correct
+              {% else %} border-gray-200 bg-gray-50
+              {% endif %}">
+              <div class="flex items-center">
+                <span class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-4 flex-shrink-0">
+                  {{ option }}
+                </span>
+                <span class="text-gray-700">{{ q.options[option] }}</span>
+                
+                {% if option == q.correct_answer %}
+                <span class="ml-auto bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                  <i class="fas fa-check mr-1"></i> Correct
+                </span>
+                {% elif option == q.user_answer and not q.is_correct %}
+                <span class="ml-auto bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                  <i class="fas fa-times mr-1"></i> Your Answer
+                </span>
+                {% elif option == q.user_answer and q.is_correct %}
+                <span class="ml-auto bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                  <i class="fas fa-check mr-1"></i> Your Answer
+                </span>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          <!-- Explanation -->
+          <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold text-gray-800 mb-2 flex items-center">
+              <i class="fas fa-lightbulb text-yellow-500 mr-2"></i> Explanation
+            </h3>
+            <p class="text-gray-700">
+              {% if q.is_correct %}
+                Great job! You correctly answered this question.
+              {% else %}
+                The correct answer is <strong>{{ q.correct_answer }}</strong>. 
+                {% if q.user_answer %}
+                  You selected <strong>{{ q.user_answer }}</strong>.
+                {% else %}
+                  You did not answer this question.
+                {% endif %}
+              {% endif %}
+            </p>
+          </div>
+          
+          <!-- AI Assistant Button -->
+          <button onclick="openChat('{{ q.question_text }}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition duration-150">
+            <i class="fas fa-robot mr-2"></i> Ask AI About This Question
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Chat Panel -->
+  <div id="chat-panel" class="fixed top-0 right-0 w-96 h-full bg-white shadow-lg border-l border-gray-200 flex flex-col z-50">
+    <div class="p-4 bg-blue-600 text-white flex justify-between items-center">
+      <h2 class="text-lg font-bold flex items-center">
+        <i class="fas fa-robot mr-2"></i> AI Assistant
+      </h2>
+      <button onclick="closeChat()" class="text-white hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div id="chat-content" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="bg-blue-100 p-3 rounded-lg chat-message">
+        <p class="text-gray-700">Hello! I can help explain any questions you're unsure about. What would you like to know?</p>
+      </div>
+    </div>
+    
+    <div class="p-4 border-t">
+      <div class="flex">
+        <input id="user-question" type="text" placeholder="Ask about this question..." 
+               class="flex-1 border border-gray-300 rounded-lg px-4 py-2 mr-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="sendQuestion()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-150">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize variables
+    const questions = document.querySelectorAll('.question-container');
+    const totalQuestions = questions.length;
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const currentQuestionDisplay = document.getElementById('current-question');
+    const progressBar = document.getElementById('progress-bar');
+    let currentIndex = 0;
+    let currentQuestion = '';
+
+    // Show question at index
+    function showQuestion(index) {
+      questions.forEach((q, i) => {
+        q.classList.toggle('hidden', i !== index);
+      });
+      
+      currentQuestionDisplay.textContent = index + 1;
+      prevButton.disabled = index === 0;
+      nextButton.disabled = index === totalQuestions - 1;
+      
+      // Update progress bar
+      const progress = ((index + 1) / totalQuestions) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+
+    // Navigation handlers
+    prevButton.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        showQuestion(currentIndex);
+      }
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (currentIndex < totalQuestions - 1) {
+        currentIndex++;
+        showQuestion(currentIndex);
+      }
+    });
+
+    // Show first question initially
+    showQuestion(currentIndex);
+
+    // Chat functionality
+    function openChat(question) {
+    currentQuestion = question;
+    document.getElementById('chat-panel').classList.add('open');
+    document.getElementById('chat-content').innerHTML = `
+      <div class="bg-blue-100 p-3 rounded-lg chat-message">
+        <p class="text-gray-700">I'm ready to help with this question: <strong>${escapeHTML(question).substring(0, 100)}${question.length > 100 ? '...' : ''}</strong></p>
+        <p class="text-sm text-gray-600 mt-2">What would you like to know about it?</p>
+      </div>
+    `;
+  }
+
+  function closeChat() {
+    document.getElementById('chat-panel').classList.remove('open');
+  }
+
+  async function sendQuestion() {
+    const inputEl = document.getElementById('user-question');
+    const userQuestion = inputEl.value.trim();
+    if (!userQuestion) return;
+
+    const chatContent = document.getElementById('chat-content');
+    chatContent.innerHTML += `
+      <div class="bg-gray-200 p-3 rounded-lg text-right chat-message">
+        <p class="text-gray-800"><strong>You:</strong> ${escapeHTML(userQuestion)}</p>
+      </div>
+    `;
+    inputEl.value = '';
+
+    try {
+      const res = await fetch('/ask_ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_question: userQuestion })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        let formatted = data.response
+          .replace(/\n/g, '<br>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        chatContent.innerHTML += `
+          <div class="bg-blue-100 p-3 rounded-lg chat-message">
+            <p class="text-gray-800"><strong>AI:</strong> ${formatted}</p>
+          </div>
+        `;
+      } else {
+        chatContent.innerHTML += `
+          <div class="bg-red-100 p-3 rounded-lg chat-message">
+            <p class="text-red-800"><strong>Error:</strong> ${escapeHTML(data.error)}</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      chatContent.innerHTML += `
+        <div class="bg-red-100 p-3 rounded-lg chat-message">
+          <p class="text-red-800"><strong>Error:</strong> ${escapeHTML(err.message)}</p>
+        </div>
+      `;
+    }
+
+    chatContent.scrollTop = chatContent.scrollHeight;
+  }
+
+  // Escape HTML to prevent XSS
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag]));
+  }
+
+  // Allow pressing Enter to send message
+  document.getElementById('user-question').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') sendQuestion();
+  });
+  </script>
+</body>
+</html>

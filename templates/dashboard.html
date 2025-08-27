@@ -1,0 +1,116 @@
+
+{% block content %}
+   <head>
+   <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Tests - TestPrepPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .difficulty-easy {
+            border-left: 4px solid #10B981;
+        }
+        .difficulty-medium {
+            border-left: 4px solid #F59E0B;
+        }
+        .difficulty-hard {
+            border-left: 4px solid #EF4444;
+        }
+    </style>
+</head>
+
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">TestPrepPro</a>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/progress" class="hover:underline"><i class="fas fa-chart-line mr-1"></i> Progress</a>
+                <a href="/preparation" class="hover:underline"><i class="fas fa-book mr-1"></i> Preparation</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">📊 Progress Dashboard</h1>
+            <p class="text-lg text-gray-600 mt-2">Track your test performance and progress over time</p>
+        </div>
+
+        <!-- Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 rounded-lg border-l-4 shadow-sm 
+                        {% if category == 'error' %}bg-red-50 border-red-400 text-red-700
+                        {% else %}bg-green-50 border-green-400 text-green-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-600">Total Tests Taken</h3>
+                <p class="text-4xl font-bold text-blue-600 mt-2">{{ total_tests }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-600">Average Score</h3>
+                <p class="text-4xl font-bold text-green-600 mt-2">{{ '%.2f' % avg_percentage }}%</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
+                <h3 class="text-lg font-semibold text-gray-600">Total Time Spent</h3>
+                <p class="text-4xl font-bold text-purple-600 mt-2">{{ total_time }} min</p>
+            </div>
+        </div>
+
+        <!-- Recent Tests -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg mb-10">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Tests</h3>
+            {% if recent_tests %}
+                <div class="divide-y divide-gray-200">
+                    {% for test in recent_tests %}
+                        <div class="flex justify-between items-center py-4">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ test_data.get(test.test_id, 'Unknown Test') }}</p>
+                                <p class="text-sm text-gray-500">{{ test.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                            <p class="text-lg font-semibold text-blue-600">{{ '%.2f' % test.percentage }}%</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No tests taken yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Subject Performance -->
+        <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Subject Performance</h3>
+            {% if subject_performance %}
+                <div class="space-y-4">
+                    {% for subject_id, performance in subject_performance.items() %}
+                        <div class="flex justify-between items-center">
+                            <p class="font-medium text-gray-900">{{ subject_performance[subject_id].name }}</p>
+                            <p class="text-sm text-gray-600">{{ performance.total }} attempts</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No subject performance data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

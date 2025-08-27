@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}TestPrep - Master Your Entry Tests{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative gradient-bg text-white overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+                Master Your <span class="text-yellow-300">Entry Tests</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto animate-fade-in">
+                Prepare for success with our comprehensive test preparation platform. Practice with real exam patterns, track your progress, and achieve your goals.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
+                {% if not session.user_id %}
+                    <a href="{{ url_for('register') }}" class="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-rocket mr-2"></i>Get Started Free
+                    </a>
+                    <a href="{{ url_for('login') }}" class="bg-transparent hover:bg-white hover:text-black text-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
+                    </a>
+                    <a href="{{ url_for('tests') }}" class="bg-transparent hover:bg-white hover:text-black text-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300">
+                        <i class="fas fa-file-alt mr-2"></i>Take a Test
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="absolute top-20 left-10 opacity-30">
+        <i class="fas fa-graduation-cap text-6xl animate-pulse"></i>
+    </div>
+    <div class="absolute top-40 right-20 opacity-30">
+        <i class="fas fa-book text-4xl animate-pulse"></i>
+    </div>
+    <div class="absolute bottom-20 left-20 opacity-30">
+        <i class="fas fa-chart-line text-5xl animate-pulse"></i>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Why Choose <span class="text-indigo-600">TestPrep</span>?
+            </h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Everything you need to excel in your entry tests, all in one powerful platform.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-brain text-indigo-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">AI-Powered Learning</h3>
+                <p class="text-gray-600">
+                    Get personalized explanations and insights powered by advanced AI to understand complex concepts better.
+                </p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-chart-bar text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Detailed Analytics</h3>
+                <p class="text-gray-600">
+                    Track your progress with comprehensive analytics and identify areas for improvement with detailed insights.
+                </p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-clock text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Timed Practice</h3>
+                <p class="text-gray-600">
+                    Practice with real exam time limits to build confidence and improve your time management skills.
+                </p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-book-open text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Comprehensive Content</h3>
+                <p class="text-gray-600">
+                    Access thousands of questions covering all subjects with detailed explanations and study materials.
+                </p>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-trophy text-yellow-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Performance Tracking</h3>
+                <p class="text-gray-600">
+                    Monitor your performance across different subjects and see your improvement over time.
+                </p>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="bg-white p-8 rounded-2xl shadow-lg card-hover border border-gray-100">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Expert Support</h3>
+                <p class="text-gray-600">
+                    Get help from our AI assistant and access curated study materials created by education experts.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-gray-900 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="animate-fade-in">
+                <div class="text-4xl md:text-5xl font-bold text-yellow-400 mb-2">10K+</div>
+                <div class="text-gray-300">Students</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-4xl md:text-5xl font-bold text-green-400 mb-2">50K+</div>
+                <div class="text-gray-300">Questions</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-4xl md:text-5xl font-bold text-blue-400 mb-2">100+</div>
+                <div class="text-gray-300">Practice Tests</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-4xl md:text-5xl font-bold text-purple-400 mb-2">95%</div>
+                <div class="text-gray-300">Success Rate</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                How It <span class="text-indigo-600">Works</span>
+            </h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Start your journey to success in just three simple steps.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Step 1 -->
+            <div class="text-center">
+                <div class="bg-indigo-600 text-white w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Create Account</h3>
+                <p class="text-gray-600">
+                    Sign up for free and verify your email to get started with your test preparation journey.
+                </p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="text-center">
+                <div class="bg-green-600 text-white w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Choose Your Test</h3>
+                <p class="text-gray-600">
+                    Select from our wide range of practice tests and customize your study plan based on your needs.
+                </p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="text-center">
+                <div class="bg-purple-600 text-white w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Practice & Improve</h3>
+                <p class="text-gray-600">
+                    Take tests, review your answers, track your progress, and improve with our AI-powered insights.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                What Students <span class="text-indigo-600">Say</span>
+            </h2>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Join thousands of successful students who achieved their goals with TestPrep.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Testimonial 1 -->
+            <div class="bg-gray-50 p-8 rounded-2xl shadow-lg card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 mb-6 italic">
+                    "TestPrep helped me improve my score by 40%! The AI explanations made complex topics so much easier to understand."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="font-semibold text-gray-900">Sarah Ahmed</div>
+                        <div class="text-sm text-gray-500">Medical College Entrance</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimonial 2 -->
+            <div class="bg-gray-50 p-8 rounded-2xl shadow-lg card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 mb-6 italic">
+                    "The progress tracking feature kept me motivated throughout my preparation. I could see exactly where I needed to improve."
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="font-semibold text-gray-900">Hassan Ali</div>
+                        <div class="text-sm text-gray-500">Engineering Entrance</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimonial 3 -->
+            <div class="bg-gray-50 p-8 rounded-2xl shadow-lg card-hover">
+                <div class="flex items-center mb-4">
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <p class="text-gray-600 mb-6 italic">
+                    "Amazing platform! The timed tests helped me manage my time better in the actual exam. Highly recommended!"
+                </p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-purple-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="font-semibold text-gray-900">Fatima Khan</div>
+                        <div class="text-sm text-gray-500">Business School Entrance</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 gradient-bg text-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Start Your Success Journey?
+        </h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto">
+            Join thousands of successful students and start preparing for your entry tests today. Your future starts here!
+        </p>
+        {% if not session.user_id %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('register') }}" class="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-rocket mr-2"></i>Start Free Trial
+                </a>
+                <a href="{{ url_for('login') }}" class="bg-transparent hover:bg-white hover:text-black text-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login Now
+                </a>
+            </div>
+        {% else %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('tests') }}" class="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-play mr-2"></i>Start Practicing
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="bg-transparent hover:bg-white hover:text-black text-white px-8 py-4 rounded-full text-lg font-semibold border-2 border-white transition-all duration-300">
+                    <i class="fas fa-tachometer-alt mr-2"></i>View Dashboard
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

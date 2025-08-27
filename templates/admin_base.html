@@ -1,0 +1,25 @@
+
+{% block navbar %}
+<nav class="bg-gray-800 p-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-white text-lg font-bold">Test Prep (Admin)</a>
+            <div class="space-x-4">
+                {% if session.is_admin %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="text-gray-300 hover:text-white">Dashboard</a>
+                    <a href="{{ url_for('admin_tests') }}" class="text-gray-300 hover:text-white">Tests</a>
+                    <a href="{{ url_for('admin_users') }}" class="text-gray-300 hover:text-white">Users</a>
+                    <a href="{{ url_for('admin_questions') }}" class="text-gray-300 hover:text-white">Questions</a>
+                    <a href="{{ url_for('admin_materials') }}" class="text-gray-300 hover:text-white">Materials</a>
+                    <a href="{{ url_for('admin_analytics') }}" class="text-gray-300 hover:text-white">Analytics</a>
+                    <a href="{{ url_for('logout') }}" class="text-gray-300 hover:text-white">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('admin_login') }}" class="text-gray-300 hover:text-white">Admin Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+{% block content %}
+{% endblock %}

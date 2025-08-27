@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Question - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/admin/dashboard" class="text-xl font-bold">TestPrepPro Admin</a>
+            <div class="flex items-center space-x-4">
+                <a href="/admin/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/admin/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/admin/questions" class="hover:underline"><i class="fas fa-question-circle mr-1"></i> Questions</a>
+                <a href="/admin/users" class="hover:underline"><i class="fas fa-users mr-1"></i> Users</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-6 max-w-3xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Edit Question</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>{{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Edit Question Form -->
+        <form method="POST" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+            {{ form.csrf_token }}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Question Text</label>
+                <textarea name="question_text" rows="3" required class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">{{ question.question_text }}</textarea>
+            </div>
+
+            <!-- Options -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Option A</label>
+                <input type="text" name="option_a" value="{{ question.option_a }}" required class="w-full border border-gray-300 rounded-lg p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Option B</label>
+                <input type="text" name="option_b" value="{{ question.option_b }}" required class="w-full border border-gray-300 rounded-lg p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Option C</label>
+                <input type="text" name="option_c" value="{{ question.option_c }}" required class="w-full border border-gray-300 rounded-lg p-2">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Option D</label>
+                <input type="text" name="option_d" value="{{ question.option_d }}" required class="w-full border border-gray-300 rounded-lg p-2">
+            </div>
+
+            <!-- Correct Answer -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Correct Answer</label>
+                <select name="correct_answer" class="w-full border border-gray-300 rounded-lg p-2">
+                    <option value="A" {% if question.correct_answer == 'A' %}selected{% endif %}>A</option>
+                    <option value="B" {% if question.correct_answer == 'B' %}selected{% endif %}>B</option>
+                    <option value="C" {% if question.correct_answer == 'C' %}selected{% endif %}>C</option>
+                    <option value="D" {% if question.correct_answer == 'D' %}selected{% endif %}>D</option>
+                </select>
+            </div>
+
+            <!-- Select Test -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Test</label>
+                <select name="test_id" required class="w-full border border-gray-300 rounded-lg p-2">
+                    {% for test in tests %}
+                        <option value="{{ test.id }}" {% if test.id == question.test_id %}selected{% endif %}>{{ test.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Select Subject -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <select name="subject_id" required class="w-full border border-gray-300 rounded-lg p-2">
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if subject.id == question.subject_id %}selected{% endif %}>{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Select Chapter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Chapter</label>
+                <select name="chapter_id" required class="w-full border border-gray-300 rounded-lg p-2">
+                    {% for chapter in chapters %}
+                        <option value="{{ chapter.id }}" {% if chapter.id == question.chapter_id %}selected{% endif %}>{{ chapter.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{{ url_for('admin_questions') }}" class="px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

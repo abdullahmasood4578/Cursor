@@ -1,0 +1,128 @@
+   <head>
+   <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Tests - TestPrepPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .test-card {
+            transition: all 0.3s ease;
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .difficulty-easy {
+            border-left: 4px solid #10B981;
+        }
+        .difficulty-medium {
+            border-left: 4px solid #F59E0B;
+        }
+        .difficulty-hard {
+            border-left: 4px solid #EF4444;
+        }
+    </style>
+</head>
+{% block content %}
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">TestPrepPro</a>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/progress" class="hover:underline"><i class="fas fa-chart-line mr-1"></i> Progress</a>
+                <a href="/preparation" class="hover:underline"><i class="fas fa-book mr-1"></i> Preparation</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">{{ test.name }}</h1>
+                <p class="text-gray-600 mt-1">Select one or more subjects to begin your test</p>
+            </div>
+            <div>
+                <span class="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                    <i class="fas fa-clock mr-1"></i> {{ test.time_limit }} mins
+                </span>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Subject Selection Card -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-book mr-2 text-blue-600"></i> Available Subjects
+            </h2>
+            <form method="POST" action="{{ url_for('take_test', test_id=test.id) }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for subject in subjects %}
+                        <label for="subject_{{ subject.id }}" class="flex items-center p-4 border rounded-lg cursor-pointer hover:shadow-md transition duration-150">
+                            <input id="subject_{{ subject.id }}" name="subjects" type="checkbox" value="{{ subject.id }}" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <div class="ml-3">
+                                <p class="text-gray-800 font-medium">{{ subject.name }}</p>
+                                <p class="text-sm text-gray-500">{{ subject.total_questions }} Questions</p>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150">
+                        <i class="fas fa-play-circle mr-2"></i> Start Test
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preparation Tips -->
+        <div class="mt-10 bg-blue-50 rounded-xl p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Test Preparation Tips</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+                        <i class="fas fa-clock text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Time Management</h4>
+                        <p class="text-sm text-gray-600">Allocate your time wisely across all subjects.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+                        <i class="fas fa-book-open text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Study First</h4>
+                        <p class="text-sm text-gray-600">Review key topics before starting the test.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-2 rounded-full mr-3 mt-1">
+                        <i class="fas fa-redo text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Practice Often</h4>
+                        <p class="text-sm text-gray-600">Frequent practice improves accuracy and speed.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

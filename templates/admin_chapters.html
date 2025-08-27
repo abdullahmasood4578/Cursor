@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Chapters - TestPrepPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-indigo-50 min-h-screen">
+  <!-- Navigation -->
+  <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="{{ url_for('admin_dashboard') }}" class="text-xl font-bold flex items-center">
+        <i class="fas fa-graduation-cap mr-2"></i> TestPrepPro Admin
+      </a>
+      <div class="flex space-x-4">
+        <a href="{{ url_for('admin_subjects', test_id=subject.test_id) }}" class="text-white hover:underline">Back to Subjects</a>
+        <a href="{{ url_for('logout') }}" class="text-white hover:underline">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-6 max-w-4xl">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+        <i class="fas fa-list text-blue-600 mr-3"></i> Chapters for {{ subject.name }}
+      </h1>
+      <a href="{{ url_for('add_chapter', test_id=subject.test_id, subject_id=subject.id) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+        <i class="fas fa-plus-circle mr-2"></i> Add Chapter
+      </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-6 space-y-3">
+          {% for category, message in messages %}
+            <div class="p-4 rounded-xl border-l-4 flex items-center
+              {% if category == 'success' %}bg-green-50 border-green-400 text-green-700
+              {% elif category == 'error' %}bg-red-50 border-red-400 text-red-700
+              {% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %}">
+              <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Chapters List -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+      {% if chapters %}
+        <table class="w-full table-auto border-collapse">
+          <thead>
+            <tr class="bg-blue-100">
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Chapter Name</th>
+              <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for chapter in chapters %}
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-4 py-3">{{ chapter.name }}</td>
+                <td class="px-4 py-3 flex space-x-3">
+                  <a href="{{ url_for('edit_chapter', test_id=subject.test_id, subject_id=subject.id, chapter_id=chapter.id) }}" class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-edit"></i> Edit
+                  </a>
+                  <form method="POST" action="{{ url_for('delete_chapter', chapter_id=chapter.id) }}" onsubmit="return confirm('Are you sure you want to delete this chapter?');">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="text-red-600 hover:text-red-800">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-gray-600 text-center">No chapters found for this subject.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

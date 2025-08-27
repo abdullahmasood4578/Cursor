@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Question - Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .form-card {
+            transition: all 0.3s ease;
+        }
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/admin/dashboard" class="text-xl font-bold">TestPrepPro Admin</a>
+            <div class="flex items-center space-x-4">
+                <a href="/admin/dashboard" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="/admin/tests" class="hover:underline"><i class="fas fa-file-alt mr-1"></i> Tests</a>
+                <a href="/admin/questions" class="hover:underline"><i class="fas fa-question-circle mr-1"></i> Questions</a>
+                <a href="/admin/users" class="hover:underline"><i class="fas fa-users mr-1"></i> Users</a>
+                <a href="/logout" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 max-w-4xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Add New Question</h1>
+            <a href="/admin/questions" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Questions
+            </a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 mb-6 text-sm rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}" role="alert">
+                        <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Form Container -->
+        <div class="form-card bg-white rounded-xl shadow-md p-6">
+            <form method="POST" action="{{ url_for('add_question') }}" class="space-y-6">
+                {{ form.csrf_token }}
+
+                <!-- Test Selection -->
+                <div>
+                    <label for="test_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-file-alt mr-2 text-blue-500"></i>Test
+                    </label>
+                    <select id="test_id" name="test_id" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                            onchange="fetchSubjects(this.value)">
+                        <option value="">Select a test</option>
+                        {% for test in tests %}
+                            <option value="{{ test.id }}">{{ test.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Subject Selection -->
+                <div>
+                    <label for="subject_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-book mr-2 text-green-500"></i>Subject
+                    </label>
+                    <select id="subject_id" name="subject_id" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                            onchange="fetchChapters(this.value)">
+                        <option value="">Select a subject</option>
+                    </select>
+                </div>
+
+                <!-- Chapter Selection -->
+                <div>
+                    <label for="chapter_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-layer-group mr-2 text-purple-500"></i>Chapter
+                    </label>
+                    <select id="chapter_id" name="chapter_id" required 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <option value="">Select a chapter</option>
+                    </select>
+                </div>
+
+                <!-- Question Text -->
+                <div>
+                    <label for="question_text" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-question-circle mr-2 text-indigo-500"></i>Question Text
+                    </label>
+                    <textarea id="question_text" name="question_text" required rows="4"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                              placeholder="Enter the question text..."></textarea>
+                </div>
+
+                <!-- Options Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Option A -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <label for="option_a" class="block text-sm font-medium text-blue-700 mb-2">
+                            <i class="fas fa-circle-a mr-2"></i>Option A
+                        </label>
+                        <input id="option_a" name="option_a" type="text" required
+                               class="w-full px-3 py-2 border border-blue-200 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white"
+                               placeholder="Enter option A">
+                    </div>
+
+                    <!-- Option B -->
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <label for="option_b" class="block text-sm font-medium text-green-700 mb-2">
+                            <i class="fas fa-circle-b mr-2"></i>Option B
+                        </label>
+                        <input id="option_b" name="option_b" type="text" required
+                               class="w-full px-3 py-2 border border-green-200 rounded-md focus:ring-green-500 focus:border-green-500 bg-white"
+                               placeholder="Enter option B">
+                    </div>
+
+                    <!-- Option C -->
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <label for="option_c" class="block text-sm font-medium text-yellow-700 mb-2">
+                            <i class="fas fa-circle-c mr-2"></i>Option C
+                        </label>
+                        <input id="option_c" name="option_c" type="text" required
+                               class="w-full px-3 py-2 border border-yellow-200 rounded-md focus:ring-yellow-500 focus:border-yellow-500 bg-white"
+                               placeholder="Enter option C">
+                    </div>
+
+                    <!-- Option D -->
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <label for="option_d" class="block text-sm font-medium text-red-700 mb-2">
+                            <i class="fas fa-circle-d mr-2"></i>Option D
+                        </label>
+                        <input id="option_d" name="option_d" type="text" required
+                               class="w-full px-3 py-2 border border-red-200 rounded-md focus:ring-red-500 focus:border-red-500 bg-white"
+                               placeholder="Enter option D">
+                    </div>
+                </div>
+
+                <!-- Correct Answer -->
+                <div>
+                    <label for="correct_answer" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-check-circle mr-2 text-green-500"></i>Correct Answer
+                    </label>
+                    <select id="correct_answer" name="correct_answer" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150 flex items-center justify-center">
+                        <i class="fas fa-plus-circle mr-2"></i> Add Question
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/admin/questions" class="bg-white p-4 rounded-lg shadow-md text-center hover:shadow-lg transition duration-150">
+                <div class="text-blue-500 text-2xl mb-2">
+                    <i class="fas fa-list"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800">View All Questions</h3>
+                <p class="text-sm text-gray-600">Manage existing questions</p>
+            </a>
+            
+            <a href="/admin/tests" class="bg-white p-4 rounded-lg shadow-md text-center hover:shadow-lg transition duration-150">
+                <div class="text-green-500 text-2xl mb-2">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800">Manage Tests</h3>
+                <p class="text-sm text-gray-600">Create and edit tests</p>
+            </a>
+            
+            <a href="/admin/dashboard" class="bg-white p-4 rounded-lg shadow-md text-center hover:shadow-lg transition duration-150">
+                <div class="text-purple-500 text-2xl mb-2">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800">Dashboard</h3>
+                <p class="text-sm text-gray-600">Return to admin dashboard</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function fetchSubjects(testId) {
+            const subjectSelect = document.getElementById('subject_id');
+            subjectSelect.innerHTML = '<option value="">Select a subject</option>';
+            
+            if (testId) {
+                try {
+                    const response = await fetch(`{{ url_for('get_subjects', test_id=0) }}`.replace('0', testId));
+                    const subjects = await response.json();
+                    
+                    subjects.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject.id;
+                        option.textContent = subject.name;
+                        subjectSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching subjects:', error);
+                }
+            }
+            
+            // Reset chapters when subject changes
+            fetchChapters('');
+        }
+
+        async function fetchChapters(subjectId) {
+            const chapterSelect = document.getElementById('chapter_id');
+            chapterSelect.innerHTML = '<option value="">Select a chapter</option>';
+            
+            if (subjectId) {
+                try {
+                    const response = await fetch(`{{ url_for('get_chapters', subject_id=0) }}`.replace('0', subjectId));
+                    const chapters = await response.json();
+                    
+                    chapters.forEach(chapter => {
+                        const option = document.createElement('option');
+                        option.value = chapter.id;
+                        option.textContent = chapter.name;
+                        chapterSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching chapters:', error);
+                }
+            }
+        }
+
+        // Add some interactive features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add focus styles to form elements
+            const formElements = document.querySelectorAll('input, select, textarea');
+            formElements.forEach(element => {
+                element.addEventListener('focus', function() {
+                    this.parentElement.classList.add('ring-2', 'ring-blue-300', 'rounded-lg');
+                });
+                
+                element.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('ring-2', 'ring-blue-300', 'rounded-lg');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

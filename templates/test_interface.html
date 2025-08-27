@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ test.name }} - TestPrepPro</title>
+    <!-- Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .question-card {
+            transition: all 0.3s ease;
+            border-radius: 16px;
+        }
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+        .option-card {
+            transition: all 0.2s ease;
+            border-radius: 12px;
+        }
+        .option-card:hover {
+            transform: translateX(5px);
+            background-color: #f8fafc;
+        }
+        .option-card.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+        .timer-warning {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold flex items-center">
+                <i class="fas fa-graduation-cap mr-2"></i> TestPrepPro
+            </a>
+            <div class="flex items-center space-x-4">
+                <span class="bg-blue-500 px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-user mr-1"></i> {{ session.username }}
+                </span>
+                <a href="{{ url_for('dashboard') }}" class="hover:underline"><i class="fas fa-tachometer-alt mr-1"></i> Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="hover:underline"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-8 text-center">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                        <i class="fas fa-file-alt text-blue-600 mr-3"></i>{{ test.name }}
+                    </h1>
+                    <p class="text-gray-600 mb-4">{{ test.description or "Complete the test to assess your knowledge." }}</p>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-blue-50 p-3 rounded-lg text-center">
+                            <i class="fas fa-question-circle text-blue-600 text-xl mb-2"></i>
+                            <p class="text-sm font-semibold text-gray-800">{{ questions|length }}</p>
+                            <p class="text-xs text-gray-600">Questions</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg text-center">
+                            <i class="fas fa-clock text-green-600 text-xl mb-2"></i>
+                            <p class="text-sm font-semibold text-gray-800">{{ test.time_limit }}</p>
+                            <p class="text-xs text-gray-600">Minutes</p>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-lg text-center">
+                            <i class="fas fa-star text-purple-600 text-xl mb-2"></i>
+                            <p class="text-sm font-semibold text-gray-800">
+                                {% if test.time_limit <= 30 %}Easy{% elif test.time_limit <= 60 %}Medium{% else %}Hard{% endif %}
+                            </p>
+                            <p class="text-xs text-gray-600">Difficulty</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-white rounded-2xl shadow-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">
+                            Question <span id="current-question">1</span> of {{ questions|length }}
+                        </span>
+                        <span id="timer" class="text-sm font-medium text-blue-600">
+                            <i class="fas fa-clock mr-1"></i> Time Remaining: {{ test.time_limit }}:00
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="progress-bar h-2.5 rounded-full bg-blue-600" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-xl border-l-4 shadow-sm 
+                                {% if category == 'error' %}bg-red-50 border-red-400 text-red-700
+                                {% else %}bg-green-50 border-green-400 text-green-700{% endif %}">
+                                <i class="fas {% if category == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-2"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Question Form -->
+            <form id="test-form" method="POST" action="{{ url_for('submit_test') }}" class="space-y-6">
+                {% for question in questions %}
+                <div class="question-container {% if loop.index0 != 0 %}hidden{% endif %}" data-question-id="{{ question.id }}" data-index="{{ loop.index0 }}">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 question-card">
+                        <div class="flex items-start mb-6">
+                            <span class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-4 flex-shrink-0">
+                                {{ loop.index }}
+                            </span>
+                            <p class="text-lg font-medium text-gray-900">{{ question.question_text }}</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="option-card flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer" onclick="selectOption(this, 'q_{{ question.id }}_a')">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-4 flex-shrink-0">A</div>
+                                <input id="q_{{ question.id }}_a" name="question_{{ question.id }}" type="radio" value="A" class="hidden">
+                                <label for="q_{{ question.id }}_a" class="flex-1 text-gray-700 cursor-pointer">{{ question.option_a }}</label>
+                            </div>
+                            
+                            <div class="option-card flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer" onclick="selectOption(this, 'q_{{ question.id }}_b')">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-4 flex-shrink-0">B</div>
+                                <input id="q_{{ question.id }}_b" name="question_{{ question.id }}" type="radio" value="B" class="hidden">
+                                <label for="q_{{ question.id }}_b" class="flex-1 text-gray-700 cursor-pointer">{{ question.option_b }}</label>
+                            </div>
+                            
+                            <div class="option-card flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer" onclick="selectOption(this, 'q_{{ question.id }}_c')">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-4 flex-shrink-0">C</div>
+                                <input id="q_{{ question.id }}_c" name="question_{{ question.id }}" type="radio" value="C" class="hidden">
+                                <label for="q_{{ question.id }}_c" class="flex-1 text-gray-700 cursor-pointer">{{ question.option_c }}</label>
+                            </div>
+                            
+                            <div class="option-card flex items-center p-4 border border-gray-200 rounded-xl cursor-pointer" onclick="selectOption(this, 'q_{{ question.id }}_d')">
+                                <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center mr-4 flex-shrink-0">D</div>
+                                <input id="q_{{ question.id }}_d" name="question_{{ question.id }}" type="radio" value="D" class="hidden">
+                                <label for="q_{{ question.id }}_d" class="flex-1 text-gray-700 cursor-pointer">{{ question.option_d }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between items-center mt-8">
+                    <button type="button" id="prev-button" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 flex items-center" disabled>
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    
+                    <button type="button" id="next-button" class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 flex items-center">
+                        Next <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    
+                    <button type="submit" id="submit-button" class="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 hidden transition duration-150 flex items-center">
+                        <i class="fas fa-check mr-2"></i> Submit Test
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables and functions
+        let questions, currentIndex = 0, saveAnswerFunc, timerInterval;
+
+        // Global selectOption function (must be outside DOMContentLoaded)
+        function selectOption(card, inputId) {
+            // Remove selected class from all options in this question
+            const questionCard = card.closest('.question-container');
+            questionCard.querySelectorAll('.option-card').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            card.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById(inputId).checked = true;
+            
+            // Save the answer
+            if (saveAnswerFunc) saveAnswerFunc();
+        }
+
+        // Wait for external resources to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            questions = document.querySelectorAll('.question-container');
+            const totalQuestions = questions.length;
+            const prevButton = document.getElementById('prev-button');
+            const nextButton = document.getElementById('next-button');
+            const submitButton = document.getElementById('submit-button');
+            const currentQuestionDisplay = document.getElementById('current-question');
+            const progressBar = document.getElementById('progress-bar');
+
+            // Timer setup
+            const timeLimit = {{ test.time_limit }} * 60;
+            let timeRemaining = timeLimit;
+            const timerElement = document.getElementById('timer');
+
+            function updateTimer() {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timerElement.innerHTML = `<i class="fas fa-clock mr-1"></i> Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                // Change color and add animation when time is running out
+                if (timeRemaining <= timeLimit * 0.2) {
+                    timerElement.classList.remove('text-blue-600');
+                    timerElement.classList.add('text-red-600', 'timer-warning');
+                } else if (timeRemaining <= timeLimit * 0.5) {
+                    timerElement.classList.remove('text-blue-600');
+                    timerElement.classList.add('text-yellow-600');
+                }
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up! Submitting your test now.');
+                    document.getElementById('test-form').submit();
+                }
+                timeRemaining--;
+            }
+
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Save answers to session storage
+            saveAnswerFunc = function saveAnswer() {
+                const currentQuestion = questions[currentIndex];
+                const questionId = currentQuestion.dataset.questionId;
+                const selectedOption = currentQuestion.querySelector(`input[name="question_${questionId}"]:checked`);
+                if (selectedOption) {
+                    sessionStorage.setItem(`answer_${questionId}`, selectedOption.value);
+                }
+            }
+
+            // Load saved answer
+            function loadAnswer(index) {
+                const question = questions[index];
+                const questionId = question.dataset.questionId;
+                const savedAnswer = sessionStorage.getItem(`answer_${questionId}`);
+                
+                // Remove selected class from all options
+                question.querySelectorAll('.option-card').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                if (savedAnswer) {
+                    const radio = question.querySelector(`input[value="${savedAnswer}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        // Find the parent option card and add selected class
+                        const optionCard = radio.closest('.option-card');
+                        if (optionCard) {
+                            optionCard.classList.add('selected');
+                        }
+                    }
+                }
+            }
+
+            // Show question at index
+            function showQuestion(index) {
+                questions.forEach((q, i) => {
+                    q.classList.toggle('hidden', i !== index);
+                });
+                
+                currentQuestionDisplay.textContent = index + 1;
+                prevButton.disabled = index === 0;
+                nextButton.classList.toggle('hidden', index === totalQuestions - 1);
+                submitButton.classList.toggle('hidden', index !== totalQuestions - 1);
+                
+                // Update progress bar
+                const progress = ((index + 1) / totalQuestions) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                loadAnswer(index);
+            }
+
+            // Navigation handlers
+            prevButton.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    saveAnswerFunc();
+                    currentIndex--;
+                    showQuestion(currentIndex);
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                if (currentIndex < totalQuestions - 1) {
+                    saveAnswerFunc();
+                    currentIndex++;
+                    showQuestion(currentIndex);
+                }
+            });
+
+            // Load saved answer for the first question
+            showQuestion(currentIndex);
+
+            // Form submission: include all answers
+            document.getElementById('test-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveAnswerFunc(); // Save the current question's answer
+                
+                // Confirm submission
+                if (!confirm('Are you sure you want to submit your test? You cannot change your answers after submission.')) {
+                    return;
+                }
+                
+                const form = e.target;
+                questions.forEach((question) => {
+                    const questionId = question.dataset.questionId;
+                    const answer = sessionStorage.getItem(`answer_${questionId}`);
+                    if (answer) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `question_${questionId}`;
+                        input.value = answer;
+                        form.appendChild(input);
+                    }
+                });
+                
+                // Show loading state
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+                submitButton.disabled = true;
+                
+                form.submit();
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                    prevButton.click();
+                } else if (e.key === 'ArrowRight' && currentIndex < totalQuestions - 1) {
+                    nextButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

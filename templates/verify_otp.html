@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight"><i class="fas fa-envelope mr-2"></i> Verify Your Email</h1>
+            <p class="text-lg text-gray-600 mt-2">Enter the OTP sent to {{ email }}</p>
+        </div>
+
+        <!-- Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-xl border border-gray-300 shadow-md 
+                            {% if category == 'error' %}bg-red-100 text-red-800 border-red-300
+                            {% else %}bg-green-100 text-green-800 border-green-300{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Form -->
+        <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 form-card">
+            <form method="POST" action="{{ url_for('verify_otp', purpose=purpose) }}" class="space-y-6">
+                <!-- Hidden Purpose Input -->
+                <input type="hidden" name="purpose" value="{{ purpose }}">
+                <!-- OTP Input -->
+                <div>
+                    <label for="otp" class="block text-sm font-medium text-gray-700">OTP</label>
+                    <input type="text" id="otp" name="otp" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Enter 6-digit OTP">
+                </div>
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="w-full flex justify-center items-center px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-check mr-1"></i> Verify OTP
+                    </button>
+                </div>
+                <!-- Resend OTP Link -->
+                <div class="text-center">
+                    <a href="{{ url_for('resend_otp', purpose=purpose) }}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center justify-center">
+                        <i class="fas fa-redo mr-1"></i> Resend OTP
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-card {
+        transition: all 0.3s ease;
+    }
+    .form-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
